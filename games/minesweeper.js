@@ -71,6 +71,8 @@ export function createMinesweeperGame(runtime) {
         difficultyKey = DIFFICULTIES[nextDifficulty] ? nextDifficulty : 'beginner';
         runtime.settings.difficulty = difficultyKey;
         runtime.saveSettings();
+        const gameWindow = host.closest('#stmg-window');
+        if (gameWindow) gameWindow.dataset.msDifficulty = difficultyKey;
         elapsedMs = 0;
         timerStartedAt = null;
         stopTimerInterval();
@@ -78,6 +80,7 @@ export function createMinesweeperGame(runtime) {
         buildBoard();
         resize();
         renderAll();
+        runtime.fitWindow?.();
     }
 
     function buildBoard() {

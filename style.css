@@ -367,10 +367,23 @@
 /* Spider */
 .stmg-spider-toolbar {
     display: grid;
-    grid-template-columns: repeat(3, minmax(54px, 1fr)) auto;
-    align-items: stretch;
     gap: 5px;
     margin-bottom: 5px;
+}
+
+.stmg-spider-stats,
+.stmg-spider-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+}
+
+.stmg-spider-actions button:active:not(:disabled) {
+    border-style: inset;
+}
+
+.stmg-spider-actions button:disabled {
+    opacity: .48;
 }
 
 .stmg-spider-stat {
@@ -461,6 +474,21 @@
     z-index: 2;
 }
 
+.stmg-spider-card.is-hint-source {
+    outline: 3px solid #5de6ff;
+    outline-offset: -2px;
+    z-index: 3;
+    animation: stmg-hint-pulse .7s ease-in-out infinite alternate;
+}
+
+.stmg-spider-card.is-hint-target,
+.stmg-spider-column.is-hint-target {
+    outline: 3px solid #fff000;
+    outline-offset: 1px;
+    z-index: 3;
+    animation: stmg-hint-pulse .7s ease-in-out infinite alternate;
+}
+
 .stmg-card-corner {
     position: absolute;
     top: 2px;
@@ -517,6 +545,12 @@
 
 .stmg-spider-stock:active:not(:disabled) {
     border-style: inset;
+}
+
+.stmg-spider-stock.is-hint {
+    outline: 3px solid #fff000;
+    outline-offset: 1px;
+    animation: stmg-hint-pulse .7s ease-in-out infinite alternate;
 }
 
 .stmg-spider-stock-card {
@@ -590,6 +624,11 @@
 
 .stmg-spider-drag-ghost .stmg-spider-card {
     display: block;
+}
+
+@keyframes stmg-hint-pulse {
+    from { filter: brightness(1); }
+    to { filter: brightness(1.22) drop-shadow(0 0 4px #fff000); }
 }
 
 html.stmg-card-drag-active,
@@ -691,13 +730,27 @@ body.stmg-card-drag-active {
     }
 
     #stmg-window,
-    #stmg-root[data-view="launcher"] #stmg-window,
-    #stmg-root[data-game="minesweeper"] #stmg-window {
+    #stmg-root[data-view="launcher"] #stmg-window {
         width: calc(100vw - 6px);
         min-width: 0;
         max-width: calc(100vw - 6px);
         max-height: calc(100vh - 6px);
         max-height: calc(100dvh - 6px);
+    }
+
+    #stmg-root[data-game="minesweeper"] #stmg-window {
+        min-width: 0;
+        max-width: calc(100vw - 6px);
+        max-height: calc(100vh - 6px);
+        max-height: calc(100dvh - 6px);
+    }
+
+    #stmg-root[data-game="minesweeper"] #stmg-window[data-ms-difficulty="beginner"] {
+        width: max-content;
+    }
+
+    #stmg-root[data-game="minesweeper"] #stmg-window[data-ms-difficulty="intermediate"] {
+        width: calc(100vw - 6px);
     }
 
     .stmg-titlebar {
@@ -722,7 +775,7 @@ body.stmg-card-drag-active {
     }
 
     .stmg-spider-board-wrap {
-        max-height: calc(100dvh - 205px);
+        max-height: calc(100dvh - 245px);
     }
 
     .stmg-spider-help {
@@ -740,12 +793,17 @@ body.stmg-card-drag-active {
     }
 
     .stmg-spider-toolbar {
-        gap: 2px;
+        gap: 3px;
     }
 
     .stmg-spider-toolbar button {
         padding-inline: 5px;
         font-size: 11px;
+    }
+
+    .stmg-spider-stats,
+    .stmg-spider-actions {
+        gap: 2px;
     }
 
     .stmg-spider-stat {
@@ -782,5 +840,12 @@ body.stmg-card-drag-active {
 @media (prefers-reduced-motion: reduce) {
     #stmg-root * {
         scroll-behavior: auto !important;
+    }
+
+    .stmg-spider-card.is-hint-source,
+    .stmg-spider-card.is-hint-target,
+    .stmg-spider-column.is-hint-target,
+    .stmg-spider-stock.is-hint {
+        animation: none !important;
     }
 }

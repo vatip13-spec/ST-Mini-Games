@@ -220,6 +220,7 @@ function gameRuntime() {
             const content = document.getElementById('stmg-content');
             return Math.max(220, content?.clientWidth || getVisibleViewport().width - 12);
         },
+        fitWindow: () => window.requestAnimationFrame(centerWindowHorizontally),
         toast: (type, message) => {
             const toaster = context().toastr;
             if (typeof toaster?.[type] === 'function') toaster[type](message);
@@ -396,6 +397,18 @@ function keepWindowInViewport() {
     const maxTop = Math.max(viewport.top + 4, viewport.top + viewport.height - rect.height - 4);
     gameWindow.style.transform = 'none';
     gameWindow.style.left = `${Math.min(Math.max(viewport.left + 4, rect.left), maxLeft)}px`;
+    gameWindow.style.top = `${Math.min(Math.max(viewport.top + 4, rect.top), maxTop)}px`;
+}
+
+function centerWindowHorizontally() {
+    const gameWindow = document.getElementById('stmg-window');
+    if (!gameWindow || gameWindow.hidden) return;
+    const viewport = getVisibleViewport();
+    const rect = gameWindow.getBoundingClientRect();
+    const centeredLeft = viewport.left + Math.max(4, (viewport.width - rect.width) / 2);
+    const maxTop = Math.max(viewport.top + 4, viewport.top + viewport.height - rect.height - 4);
+    gameWindow.style.transform = 'none';
+    gameWindow.style.left = `${centeredLeft}px`;
     gameWindow.style.top = `${Math.min(Math.max(viewport.top + 4, rect.top), maxTop)}px`;
 }
 

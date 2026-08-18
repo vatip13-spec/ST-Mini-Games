@@ -17,6 +17,7 @@ export class SpiderGame {
         this.completed = 0;
         this.moves = 0;
         this.status = SPIDER_STATUS.RUNNING;
+        this.history = [];
 
         for (let column = 0; column < 10; column += 1) {
             const count = column < 4 ? 6 : 5;
@@ -75,6 +76,7 @@ export class SpiderGame {
     move(sourceColumn, cardIndex, targetColumn) {
         if (!this.canMove(sourceColumn, cardIndex, targetColumn)) return false;
 
+        this.history.push(this.createSnapshot());
         const movingCards = this.tableau[sourceColumn].splice(cardIndex);
         this.tableau[targetColumn].push(...movingCards);
         this.flipExposedCard(sourceColumn);
@@ -92,6 +94,7 @@ export class SpiderGame {
     deal() {
         if (!this.canDeal()) return false;
 
+        this.history.push(this.createSnapshot());
         const cards = this.stock.splice(0, 10);
         cards.forEach((card, column) => {
             card.faceUp = true;
@@ -100,6 +103,69 @@ export class SpiderGame {
         this.moves += 1;
         this.removeCompletedRuns();
         return true;
+    }
+
+    createSnapshot() {
+        return {
+            tableau: this.tableau.map(column => column.map(card => ({ ...card }))),
+            stock: this.stock.map(card => ({ ...card })),
+            completed: this.completed,
+            moves: this.moves,
+            status: this.status,
+        };
+    }
+
+    undo() {
+        const snapshot = this.history.pop();
+        if (!snapshot) return false;
+
+        this.tableau = snapshot.tableau.map(column => column.map(card => ({ ...card })));
+        this.stock = snapshot.stock.map(card => ({ ...card }));
+        this.completed = snapshot.completed;
+        this.moves = snapshot.moves;
+        this.status = snapshot.status;
+        return true;
+    }
+
+    getHint() {
+        if (this.status === SPIDER_STATUS.WON) return null;
+        const candidates = [];
+
+        for (let sourceColumn = 0; sourceColumn < this.tableau.length; sourceColumn += 1) {
+            const source = this.tableau[sourceColumn];
+            for (let cardIndex = 0; cardIndex < source.length; cardIndex += 1) {
+                if (!this.isMovableSequence(sourceColumn, cardIndex)) continue;
+
+                for (let targetColumn = 0; targetColumn < this.tableau.length; targetColumn += 1) {
+                    if (!this.canMove(sourceColumn, cardIndex, targetColumn)) continue;
+                    const target = this.tableau[targetColumn];
+                    if (target.length === 0 && cardIndex === 0) continue;
+
+                    const moving = source.slice(cardIndex);
+                    let score = moving.length;
+                    if (source[cardIndex - 1] && !source[cardIndex - 1].faceUp) score += 1000;
+                    if (target.length > 0) score += 100;
+                    else score -= 20;
+                    if (this.wouldCompleteRun(target, moving)) score += 2000;
+
+                    candidates.push({ type: 'move', sourceColumn, cardIndex, targetColumn, score });
+                }
+            }
+        }
+
+        if (candidates.length > 0) {
+            candidates.sort((left, right) => right.score - left.score);
+            const { score: _score, ...hint } = candidates[0];
+            return hint;
+        }
+        if (this.canDeal()) return { type: 'deal' };
+        return null;
+    }
+
+    wouldCompleteRun(target, moving) {
+        const combined = target.concat(moving);
+        if (combined.length < 13) return false;
+        return combined.slice(-13).every((card, index) => card.faceUp && card.rank === 13 - index);
     }
 
     flipExposedCard(columnIndex) {
@@ -135,5 +201,9 @@ export class SpiderGame {
 
     get remainingDeals() {
         return Math.floor(this.stock.length / 10);
+    }
+
+    get canUndo() {
+        return this.history.length > 0;
     }
 }

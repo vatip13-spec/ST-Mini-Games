@@ -13,15 +13,23 @@ export function createSpiderGame(runtime) {
     let elapsedMs = 0;
     let timerStartedAt = null;
     let gameStarted = false;
+    let hintState = null;
+    let hintTimer = null;
 
     function mount(container) {
         host = container;
         host.innerHTML = `
             <div class="stmg-spider-toolbar">
-                <div class="stmg-spider-stat"><span>완성</span><strong data-spider-completed>0 / 8</strong></div>
-                <div class="stmg-spider-stat"><span>이동</span><strong data-spider-moves>0</strong></div>
-                <div class="stmg-spider-stat"><span>시간</span><strong data-spider-timer>00:00</strong></div>
-                <button type="button" data-spider-new>새 게임</button>
+                <div class="stmg-spider-stats">
+                    <div class="stmg-spider-stat"><span>완성</span><strong data-spider-completed>0 / 8</strong></div>
+                    <div class="stmg-spider-stat"><span>이동</span><strong data-spider-moves>0</strong></div>
+                    <div class="stmg-spider-stat"><span>시간</span><strong data-spider-timer>00:00</strong></div>
+                </div>
+                <div class="stmg-spider-actions">
+                    <button type="button" data-spider-undo>↶ 되돌리기</button>
+                    <button type="button" data-spider-hint>💡 힌트</button>
+                    <button type="button" data-spider-new>새 게임</button>
+                </div>
             </div>
             <div class="stmg-spider-board-wrap">
                 <div class="stmg-spider-board" aria-label="스파이더 카드게임 판"></div>
@@ -40,6 +48,8 @@ export function createSpiderGame(runtime) {
             </div>`;
 
         host.querySelector('[data-spider-new]').addEventListener('click', requestNewGame);
+        host.querySelector('[data-spider-undo]').addEventListener('click', undoMove);
+        host.querySelector('[data-spider-hint]').addEventListener('click', showHint);
         host.querySelector('[data-spider-deal]').addEventListener('click', dealStock);
 
         const board = host.querySelector('.stmg-spider-board');
@@ -58,6 +68,7 @@ export function createSpiderGame(runtime) {
 
     function startNewGame() {
         cancelPointer();
+        clearHint();
         game = new SpiderGame();
         selected = null;
         elapsedMs = 0;
@@ -96,8 +107,11 @@ export function createSpiderGame(runtime) {
         host.querySelector('[data-spider-completed]').textContent = `${game.completed} / 8`;
         host.querySelector('[data-spider-moves]').textContent = String(game.moves);
         host.querySelector('[data-spider-deals]').textContent = `${game.remainingDeals}회`;
+        host.querySelector('[data-spider-undo]').disabled = !game.canUndo;
+        host.querySelector('[data-spider-hint]').disabled = game.status === SPIDER_STATUS.WON;
         const dealButton = host.querySelector('[data-spider-deal]');
         dealButton.disabled = game.stock.length < 10 || game.status === SPIDER_STATUS.WON;
+        dealButton.classList.toggle('is-hint', hintState?.type === 'deal');
         dealButton.title = game.tableau.some(column => column.length === 0)
             ? '빈 열을 채운 뒤 카드를 나눌 수 있습니다.'
             : '다음 카드 열 장 놓기';
@@ -126,8 +140,20 @@ export function createSpiderGame(runtime) {
                 if (selected?.column === columnIndex && cardIndex >= selected.index) {
                     cardElement.classList.add('is-selected');
                 }
+                if (hintState?.type === 'move' && hintState.sourceColumn === columnIndex && cardIndex >= hintState.cardIndex) {
+                    cardElement.classList.add('is-hint-source');
+                }
+                if (hintState?.type === 'move'
+                    && hintState.targetColumn === columnIndex
+                    && cardIndex === column.length - 1) {
+                    cardElement.classList.add('is-hint-target');
+                }
                 columnElement.append(cardElement);
             });
+
+            if (hintState?.type === 'move' && hintState.targetColumn === columnIndex && column.length === 0) {
+                columnElement.classList.add('is-hint-target');
+            }
 
             fragment.append(columnElement);
         });
@@ -168,6 +194,7 @@ export function createSpiderGame(runtime) {
 
     function handlePointerDown(event) {
         if (event.button !== 0 || game.status === SPIDER_STATUS.WON) return;
+        clearHint();
         const board = host.querySelector('.stmg-spider-board');
         const card = event.target.closest('.stmg-spider-card');
         const columnElement = event.target.closest('.stmg-spider-column');
@@ -265,6 +292,7 @@ export function createSpiderGame(runtime) {
     }
 
     function dealStock() {
+        clearHint();
         if (game.tableau.some(column => column.length === 0)) {
             runtime.toast('warning', '빈 열을 먼저 채워야 카드를 나눌 수 있습니다.');
             return;
@@ -274,6 +302,49 @@ export function createSpiderGame(runtime) {
         selected = null;
         afterSuccessfulMove(wasWon);
         renderAll();
+    }
+
+    function undoMove() {
+        clearHint();
+        cancelPointer();
+        const wasWon = game.status === SPIDER_STATUS.WON;
+        if (!game.undo()) return;
+        selected = null;
+        if (wasWon && game.status !== SPIDER_STATUS.WON && gameStarted) resume();
+        renderAll();
+    }
+
+    function showHint() {
+        clearHint();
+        const hint = game.getHint();
+        if (!hint) {
+            runtime.toast('warning', '지금 가능한 이동이 없습니다. 되돌리기를 사용해 보세요.');
+            return;
+        }
+
+        hintState = hint;
+        if (hint.type === 'deal') {
+            runtime.toast('info', '카드 더미를 눌러 새 카드를 나눠보세요.');
+        } else {
+            const card = game.tableau[hint.sourceColumn][hint.cardIndex];
+            runtime.toast('info', `${hint.sourceColumn + 1}열의 ${rankLabel(card.rank)}♠부터 ${hint.targetColumn + 1}열로 옮길 수 있습니다.`);
+        }
+        renderAll();
+        hintTimer = window.setTimeout(() => {
+            hintTimer = null;
+            hintState = null;
+            renderAll();
+        }, 3200);
+    }
+
+    function clearHint() {
+        if (hintTimer !== null) window.clearTimeout(hintTimer);
+        hintTimer = null;
+        hintState = null;
+        if (!host) return;
+        host.querySelectorAll('.is-hint-source, .is-hint-target, .is-hint').forEach(element => {
+            element.classList.remove('is-hint-source', 'is-hint-target', 'is-hint');
+        });
     }
 
     function afterSuccessfulMove(wasWon) {
@@ -352,6 +423,7 @@ export function createSpiderGame(runtime) {
 
     function destroy() {
         pause();
+        clearHint();
         if (host) host.replaceChildren();
         host = null;
         game = null;

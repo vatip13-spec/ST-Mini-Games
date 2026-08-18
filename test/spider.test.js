@@ -46,3 +46,58 @@ test('removing eight runs wins the game', () => {
     game.removeCompletedRuns();
     assert.equal(game.status, SPIDER_STATUS.WON);
 });
+
+test('undo restores a card move, including a newly flipped card', () => {
+    const game = new SpiderGame(() => 0.2);
+    game.tableau = [
+        [{ id: 'hidden', rank: 10, faceUp: false }, { id: 'eight', rank: 8, faceUp: true }, { id: 'seven', rank: 7, faceUp: true }],
+        [{ id: 'nine', rank: 9, faceUp: true }],
+        [], [], [], [], [], [], [], [],
+    ];
+    game.stock = [];
+    const before = game.createSnapshot();
+
+    assert.equal(game.move(0, 1, 1), true);
+    assert.equal(game.tableau[0][0].faceUp, true);
+    assert.equal(game.canUndo, true);
+    assert.equal(game.undo(), true);
+    assert.deepEqual(game.createSnapshot(), before);
+    assert.equal(game.canUndo, false);
+});
+
+test('undo restores a stock deal and can be used repeatedly', () => {
+    const game = new SpiderGame(() => 0.3);
+    game.tableau = Array.from({ length: 10 }, (_, index) => [{ id: `base-${index}`, rank: 13, faceUp: true }]);
+    game.stock = Array.from({ length: 20 }, (_, index) => ({ id: `stock-${index}`, rank: 5, faceUp: false }));
+    const before = game.createSnapshot();
+
+    assert.equal(game.deal(), true);
+    assert.equal(game.deal(), true);
+    assert.equal(game.history.length, 2);
+    assert.equal(game.undo(), true);
+    assert.equal(game.undo(), true);
+    assert.deepEqual(game.createSnapshot(), before);
+});
+
+test('hint returns a legal card move without changing the game', () => {
+    const game = new SpiderGame(() => 0.4);
+    game.tableau = [
+        [{ id: 'eight', rank: 8, faceUp: true }, { id: 'seven', rank: 7, faceUp: true }],
+        [{ id: 'nine', rank: 9, faceUp: true }],
+        ...Array.from({ length: 8 }, (_, index) => [{ id: `five-${index}`, rank: 5, faceUp: true }]),
+    ];
+    game.stock = [];
+    const before = game.createSnapshot();
+    const hint = game.getHint();
+
+    assert.deepEqual(hint, { type: 'move', sourceColumn: 0, cardIndex: 0, targetColumn: 1 });
+    assert.equal(game.canMove(hint.sourceColumn, hint.cardIndex, hint.targetColumn), true);
+    assert.deepEqual(game.createSnapshot(), before);
+});
+
+test('hint recommends dealing when no card move is available', () => {
+    const game = new SpiderGame(() => 0.5);
+    game.tableau = Array.from({ length: 10 }, (_, index) => [{ id: `five-${index}`, rank: 5, faceUp: true }]);
+    game.stock = Array.from({ length: 10 }, (_, index) => ({ id: `stock-${index}`, rank: 8, faceUp: false }));
+    assert.deepEqual(game.getHint(), { type: 'deal' });
+});
