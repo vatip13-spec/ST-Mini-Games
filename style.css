@@ -115,7 +115,15 @@
 
 #stmg-root[data-game="minesweeper"] #stmg-window {
     width: max-content;
-    min-width: min(320px, calc(100vw - 12px));
+    min-width: 0;
+}
+
+@media (min-width: 701px) {
+    #stmg-root[data-game="spider"] .stmg-spider-board-wrap {
+        height: clamp(250px, calc(100vh - 250px), 560px);
+        height: clamp(250px, calc(100dvh - 250px), 560px);
+        max-height: none;
+    }
 }
 
 #stmg-window[hidden],

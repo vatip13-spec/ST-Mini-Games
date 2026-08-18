@@ -106,10 +106,26 @@ export function createMinesweeperGame(runtime) {
         const board = host.querySelector('.stmg-ms-board');
         const windowWidth = runtime.getAvailableWidth();
         const compact = window.matchMedia('(pointer: coarse)').matches || windowWidth <= 700;
-        const available = Math.max(260, Math.min(windowWidth - 30, 680));
-        const maximum = compact ? (game.columns === 9 ? 26 : 21) : (game.columns === 9 ? 30 : 24);
-        const minimum = game.columns === 9 ? 24 : 18;
-        const size = Math.max(minimum, Math.min(maximum, Math.floor((available - 18) / game.columns)));
+        const narrowViewport = window.innerWidth <= 700;
+        let size;
+
+        if (game.columns === 16 && narrowViewport) {
+            const frame = host.querySelector('.stmg-ms-frame');
+            const boardWrap = host.querySelector('.stmg-ms-board-wrap');
+            const frameStyle = window.getComputedStyle(frame);
+            const wrapStyle = window.getComputedStyle(boardWrap);
+            const horizontalChrome = (Number.parseFloat(frameStyle.paddingLeft) || 0)
+                + (Number.parseFloat(frameStyle.paddingRight) || 0)
+                + (Number.parseFloat(wrapStyle.borderLeftWidth) || 0)
+                + (Number.parseFloat(wrapStyle.borderRightWidth) || 0);
+            const usableWidth = Math.max(256, frame.clientWidth - horizontalChrome);
+            const maximum = window.innerWidth <= 480 ? 30 : 24;
+            size = Math.max(16, Math.min(maximum, usableWidth / game.columns));
+        } else {
+            size = compact
+                ? (game.columns === 9 ? 26 : 21)
+                : (game.columns === 9 ? 30 : 24);
+        }
         board.style.setProperty('--stmg-ms-cell-size', `${size}px`);
     }
 
