@@ -3,20 +3,14 @@ import { SlashCommand } from '../../../slash-commands/SlashCommand.js';
 import { ARGUMENT_TYPE, SlashCommandArgument } from '../../../slash-commands/SlashCommandArgument.js';
 import { createMinesweeperGame } from './games/minesweeper.js';
 import { createSpiderGame } from './games/spider.js';
-<<<<<<< HEAD
 import { createTerritoryGame } from './games/territory.js';
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
 
 const MODULE_NAME = 'st_mini_games';
 
 const GAMES = Object.freeze({
     minesweeper: Object.freeze({ label: '지뢰찾기', icon: '💣', description: '초급 · 중급 클래식 지뢰찾기', create: createMinesweeperGame }),
     spider: Object.freeze({ label: '스파이더 카드게임', icon: '🂡', description: '한 무늬로 즐기는 스파이더', create: createSpiderGame }),
-<<<<<<< HEAD
     territory: Object.freeze({ label: '땅따먹기', icon: '🛸', description: '선을 이어 80%를 점령하는 아케이드', create: createTerritoryGame }),
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
 });
 
 const DEFAULT_COLORS = Object.freeze({
@@ -72,12 +66,8 @@ const SETTINGS_TEMPLATE = `
             <b>🕹️ Mini Games</b>
             <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
         </div>
-<<<<<<< HEAD
         <div class="inline-drawer-content" style="display: none;">
           <div class="stmg-settings-content">
-=======
-        <div class="inline-drawer-content">
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
             <label class="checkbox_label" for="stmg-show-floating">
                 <input id="stmg-show-floating" type="checkbox">
                 <span>플로팅 버튼 표시</span>
@@ -99,12 +89,8 @@ const SETTINGS_TEMPLATE = `
                 <button id="stmg-theme-import" class="menu_button" type="button">테마 불러오기</button>
                 <input id="stmg-theme-file" type="file" accept="application/json,.json" hidden>
             </div>
-<<<<<<< HEAD
             <small>게임 열기: <code>/minigames</code>, <code>/ms</code>, <code>/spider</code>, <code>/territory</code></small>
           </div>
-=======
-            <small>게임 열기: <code>/minigames</code>, <code>/ms</code>, <code>/spider</code></small>
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
         </div>
     </div>
 </div>`;
@@ -199,13 +185,10 @@ function createUi() {
     window.addEventListener('resize', handleViewportChange, { passive: true });
     window.visualViewport?.addEventListener('resize', handleViewportChange, { passive: true });
     window.visualViewport?.addEventListener('scroll', handleViewportChange, { passive: true });
-<<<<<<< HEAD
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) activeGame?.pause?.();
         else if (panelOpen) activeGame?.resume?.();
     });
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
 }
 
 function showLauncher() {
@@ -631,30 +614,18 @@ function registerSlashCommand() {
             if (action === 'close' || action === '닫기') closePanel();
             else if (action === 'minesweeper' || action === '지뢰찾기') openGameFromCommand('minesweeper');
             else if (action === 'spider' || action === '스파이더') openGameFromCommand('spider');
-<<<<<<< HEAD
             else if (action === 'territory' || action === 'land' || action === '땅따먹기') openGameFromCommand('territory');
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
             else if (action === 'menu' || action === '목록') void initialize().then(() => { showLauncher(); openPanel(); });
             else togglePanel();
             return '';
         },
         unnamedArgumentList: [SlashCommandArgument.fromProps({
-<<<<<<< HEAD
             description: 'menu, minesweeper, spider, territory, close 중 하나',
             typeList: [ARGUMENT_TYPE.STRING],
             isRequired: false,
             enumList: ['menu', 'minesweeper', 'spider', 'territory', 'close'],
         })],
         helpString: '<div>미니게임 창을 열거나 게임을 바로 시작합니다.</div><div><code>/minigames</code>, <code>/mg menu</code>, <code>/mg spider</code>, <code>/mg territory</code></div>',
-=======
-            description: 'menu, minesweeper, spider, close 중 하나',
-            typeList: [ARGUMENT_TYPE.STRING],
-            isRequired: false,
-            enumList: ['menu', 'minesweeper', 'spider', 'close'],
-        })],
-        helpString: '<div>미니게임 창을 열거나 게임을 바로 시작합니다.</div><div><code>/minigames</code>, <code>/mg menu</code>, <code>/mg spider</code></div>',
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
     }));
 
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
@@ -670,7 +641,6 @@ function registerSlashCommand() {
         callback: () => { openGameFromCommand('spider'); return ''; },
         helpString: '<div>한 무늬 스파이더 카드게임을 엽니다.</div>',
     }));
-<<<<<<< HEAD
 
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'territory',
@@ -678,8 +648,6 @@ function registerSlashCommand() {
         callback: () => { openGameFromCommand('territory'); return ''; },
         helpString: '<div>선을 이어 영역을 점령하는 땅따먹기를 엽니다.</div>',
     }));
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
 }
 
 async function initialize() {

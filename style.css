@@ -118,14 +118,11 @@
     min-width: 0;
 }
 
-<<<<<<< HEAD
 #stmg-root[data-game="territory"] #stmg-window {
     width: min(660px, calc(100vw - 12px));
     min-width: 0;
 }
 
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
 @media (min-width: 701px) {
     #stmg-root[data-game="spider"] .stmg-spider-board-wrap {
         height: clamp(250px, calc(100vh - 250px), 560px);
@@ -662,7 +659,6 @@ body.stmg-card-drag-active {
     touch-action: none !important;
 }
 
-<<<<<<< HEAD
 /* Territory */
 .stmg-territory-toolbar {
     display: grid;
@@ -827,8 +823,6 @@ body.stmg-card-drag-active {
     display: none;
 }
 
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
 /* Settings */
 #stmg-settings {
     width: 100%;
@@ -838,13 +832,10 @@ body.stmg-card-drag-active {
 }
 
 #stmg-settings .inline-drawer-content {
-<<<<<<< HEAD
     width: 100%;
 }
 
 #stmg-settings .stmg-settings-content {
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -943,15 +934,12 @@ body.stmg-card-drag-active {
         max-height: calc(100dvh - 6px);
     }
 
-<<<<<<< HEAD
     #stmg-root[data-game="territory"] #stmg-window {
         width: calc(100vw - 6px);
         min-width: 0;
         max-width: calc(100vw - 6px);
     }
 
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
     #stmg-root[data-game="minesweeper"] #stmg-window[data-ms-difficulty="beginner"] {
         width: max-content;
     }
@@ -993,7 +981,6 @@ body.stmg-card-drag-active {
         font-size: 10px;
     }
 
-<<<<<<< HEAD
     .stmg-territory-toolbar {
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 3px;
@@ -1026,8 +1013,6 @@ body.stmg-card-drag-active {
         display: inline;
     }
 
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
     #stmg-settings .stmg-color-grid {
         grid-template-columns: 1fr;
     }
@@ -1037,13 +1022,10 @@ body.stmg-card-drag-active {
     #stmg-root[data-game="minesweeper"] #stmg-window[data-ms-difficulty="intermediate"] {
         width: max-content;
     }
-<<<<<<< HEAD
 
     #stmg-root[data-game="territory"] #stmg-window {
         width: min(660px, calc(100vw - 12px));
     }
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
 }
 
 @media (max-width: 390px) {
@@ -1078,14 +1060,11 @@ body.stmg-card-drag-active {
     .stmg-spider-foundations {
         gap: 2px;
     }
-<<<<<<< HEAD
 
     .stmg-territory-controls {
         grid-template-columns: minmax(138px, 1fr) minmax(112px, .8fr);
         gap: 5px;
     }
-=======
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
 }
 
 @media (max-height: 540px) and (orientation: landscape) {
@@ -1096,7 +1075,6 @@ body.stmg-card-drag-active {
 
     .stmg-ms-touch-controls,
     .stmg-ms-help,
-<<<<<<< HEAD
     .stmg-spider-help,
     .stmg-territory-help {
         display: none;
@@ -1110,12 +1088,6 @@ body.stmg-card-drag-active {
         margin-top: 4px;
     }
 
-=======
-    .stmg-spider-help {
-        display: none;
-    }
-
->>>>>>> c1808c1481b038ce458d0a6c265634dc1ec24241
     .stmg-spider-board-wrap {
         max-height: calc(100dvh - 130px);
     }
