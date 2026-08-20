@@ -1,0 +1,16 @@
+{
+    "display_name": "Mini Games",
+    "loading_order": 100,
+    "requires": [],
+    "optional": [],
+    "dependencies": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "Y님",
+    "version": "1.1.0",
+    "minimum_client_version": "1.18.0",
+    "auto_update": false,
+    "hooks": {
+        "activate": "onActivate"
+    }
+}
