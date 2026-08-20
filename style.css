@@ -372,6 +372,14 @@
     margin-top: 7px;
 }
 
+.stmg-ms-help {
+    display: none;
+    margin: 6px 2px 0;
+    font-size: 11px;
+    line-height: 1.35;
+    text-align: center;
+}
+
 /* Spider */
 .stmg-spider-toolbar {
     display: grid;
@@ -782,6 +790,10 @@ body.stmg-card-drag-active {
         display: grid;
     }
 
+    .stmg-ms-help {
+        display: block;
+    }
+
     .stmg-spider-board-wrap {
         max-height: calc(100dvh - 245px);
     }
@@ -792,6 +804,12 @@ body.stmg-card-drag-active {
 
     #stmg-settings .stmg-color-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (pointer: coarse) and (min-width: 701px) {
+    #stmg-root[data-game="minesweeper"] #stmg-window[data-ms-difficulty="intermediate"] {
+        width: max-content;
     }
 }
 
@@ -836,6 +854,7 @@ body.stmg-card-drag-active {
     }
 
     .stmg-ms-touch-controls,
+    .stmg-ms-help,
     .stmg-spider-help {
         display: none;
     }

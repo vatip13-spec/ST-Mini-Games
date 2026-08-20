@@ -18,6 +18,8 @@ export function createMinesweeperGame(runtime) {
     let longPressTimer = null;
     let longPressTriggered = false;
     let suppressClickUntil = 0;
+    let lastPointerType = 'mouse';
+    let mouseChordActive = false;
 
     function mount(container) {
         host = container;
@@ -39,6 +41,7 @@ export function createMinesweeperGame(runtime) {
                     <button type="button" data-input-mode="reveal" aria-pressed="true">칸 열기</button>
                     <button type="button" data-input-mode="flag" aria-pressed="false">깃발</button>
                 </div>
+                <p class="stmg-ms-help">짧게: 칸 열기 · 길게: 깃발 · 열린 숫자 다시 누르기: 주변 열기</p>
             </div>`;
 
         host.querySelector('[data-ms-new]').addEventListener('click', requestNewGame);
@@ -52,10 +55,12 @@ export function createMinesweeperGame(runtime) {
         const board = host.querySelector('.stmg-ms-board');
         board.addEventListener('click', handleBoardClick);
         board.addEventListener('contextmenu', handleBoardContextMenu);
+        board.addEventListener('mousedown', handleBoardMouseDown);
         board.addEventListener('pointerdown', handleBoardPointerDown);
         board.addEventListener('pointerup', cancelLongPress);
         board.addEventListener('pointercancel', cancelLongPress);
         board.addEventListener('pointerleave', cancelLongPress);
+        window.addEventListener('mouseup', handleWindowMouseUp);
 
         startNewGame(difficultyKey);
     }
@@ -104,9 +109,9 @@ export function createMinesweeperGame(runtime) {
     function resize() {
         if (!host || !game) return;
         const board = host.querySelector('.stmg-ms-board');
-        const windowWidth = runtime.getAvailableWidth();
-        const compact = window.matchMedia('(pointer: coarse)').matches || windowWidth <= 700;
-        const narrowViewport = window.innerWidth <= 700;
+        const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+        const compact = viewportWidth <= 700;
+        const narrowViewport = viewportWidth <= 700;
         let size;
 
         if (game.columns === 16 && narrowViewport) {
@@ -119,7 +124,7 @@ export function createMinesweeperGame(runtime) {
                 + (Number.parseFloat(wrapStyle.borderLeftWidth) || 0)
                 + (Number.parseFloat(wrapStyle.borderRightWidth) || 0);
             const usableWidth = Math.max(256, frame.clientWidth - horizontalChrome);
-            const maximum = window.innerWidth <= 480 ? 30 : 24;
+            const maximum = viewportWidth <= 480 ? 30 : 24;
             size = Math.max(16, Math.min(maximum, usableWidth / game.columns));
         } else {
             size = compact
@@ -183,6 +188,13 @@ export function createMinesweeperGame(runtime) {
         const cell = cellFromEvent(event);
         if (!cell || Date.now() < suppressClickUntil) return;
         const index = Number(cell.dataset.index);
+        const isOpenNumber = game.states[index] === CELL_STATE.OPEN && game.values[index] > 0;
+
+        if (isOpenNumber) {
+            if (lastPointerType !== 'mouse' || event.detail === 0) performChord(index);
+            return;
+        }
+
         if (inputMode === 'flag') performFlag(index);
         else performReveal(index);
     }
@@ -195,7 +207,25 @@ export function createMinesweeperGame(runtime) {
         performFlag(Number(cell.dataset.index));
     }
 
+    function handleBoardMouseDown(event) {
+        if (event.buttons !== 3 || mouseChordActive) return;
+        const cell = cellFromEvent(event);
+        if (!cell) return;
+        const index = Number(cell.dataset.index);
+        if (game.states[index] !== CELL_STATE.OPEN || game.values[index] <= 0) return;
+
+        event.preventDefault();
+        mouseChordActive = true;
+        suppressClickUntil = Date.now() + 800;
+        performChord(index);
+    }
+
+    function handleWindowMouseUp(event) {
+        if ((event.buttons & 3) !== 3) mouseChordActive = false;
+    }
+
     function handleBoardPointerDown(event) {
+        lastPointerType = event.pointerType || 'mouse';
         if (event.pointerType === 'mouse' || event.button !== 0) return;
         const cell = cellFromEvent(event);
         if (!cell) return;
@@ -219,6 +249,12 @@ export function createMinesweeperGame(runtime) {
         const before = game.status;
         if (!game.reveal(index)) return;
         if (before === GAME_STATUS.READY && game.status === GAME_STATUS.RUNNING) beginTimerIfNeeded();
+        if (game.status === GAME_STATUS.WON || game.status === GAME_STATUS.LOST) finishTimer();
+        renderAll();
+    }
+
+    function performChord(index) {
+        if (!game.chord(index)) return;
         if (game.status === GAME_STATUS.WON || game.status === GAME_STATUS.LOST) finishTimer();
         renderAll();
     }
@@ -298,6 +334,7 @@ export function createMinesweeperGame(runtime) {
     function destroy() {
         pause();
         cancelLongPress();
+        window.removeEventListener('mouseup', handleWindowMouseUp);
         if (host) host.replaceChildren();
         host = null;
         game = null;

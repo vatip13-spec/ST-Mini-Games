@@ -57,3 +57,42 @@ test('every numbered cell matches its adjacent mine count', () => {
         assert.equal(game.values[index], adjacentMines);
     }
 });
+
+test('chording an open number reveals all closed neighbors when flags match', () => {
+    const game = new MinesweeperGame(3, 3, 1);
+    game.values = Int8Array.from([
+        0, 0, 0,
+        0, 1, 1,
+        0, 1, -1,
+    ]);
+    game.states[4] = CELL_STATE.OPEN;
+    game.states[8] = CELL_STATE.FLAGGED;
+    game.minesPlaced = true;
+    game.status = GAME_STATUS.RUNNING;
+    game.openedCount = 1;
+    game.flaggedCount = 1;
+
+    assert.equal(game.chord(4), true);
+    assert.equal(game.status, GAME_STATUS.WON);
+    assert.equal(game.openedCount, 8);
+});
+
+test('chording with a wrong flag explodes the unflagged mine', () => {
+    const game = new MinesweeperGame(3, 3, 1);
+    game.values = Int8Array.from([
+        0, 0, 0,
+        0, 1, 1,
+        0, 1, -1,
+    ]);
+    game.states[4] = CELL_STATE.OPEN;
+    game.states[0] = CELL_STATE.FLAGGED;
+    game.minesPlaced = true;
+    game.status = GAME_STATUS.RUNNING;
+    game.openedCount = 1;
+    game.flaggedCount = 1;
+
+    assert.equal(game.chord(4), true);
+    assert.equal(game.status, GAME_STATUS.LOST);
+    assert.equal(game.explodedIndex, 8);
+    assert.equal(game.states[8], CELL_STATE.OPEN);
+});
